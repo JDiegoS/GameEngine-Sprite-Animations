@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/MYGAME.dir/src/main.cpp.o CMakeFiles/MYGAME.dir/src/Game/game.cpp.o CMakeFiles/MYGAME.dir/src/Scene/Scene.cpp.o  -o MYGAME  -lSDL2 -lSDL2_image -lSDL2main 

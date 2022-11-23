@@ -1,0 +1,3 @@
+/mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/build/CMakeFiles/rebuild_cache.dir
+/mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/build/CMakeFiles/edit_cache.dir
+/mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/build/CMakeFiles/MYGAME.dir
