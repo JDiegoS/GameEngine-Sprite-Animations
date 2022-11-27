@@ -27,10 +27,13 @@ struct CameraComponent {
 };
 
 struct SpriteComponent {
+  int sheetIndex = 0;
+  int frames = 1;
+  float durationSeconds = 0;
   int x = 0;
   int y = 0;
   int size = 24;
-  SDL_Texture* texture;
+  int lastUpdate = 0;
 };
 
 #endif

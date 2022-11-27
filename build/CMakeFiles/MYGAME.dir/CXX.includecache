@@ -52,6 +52,24 @@ iostream
 Scene.h
 /mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/src/Scene/Scene.h
 
+/mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/src/Scene/Scene.cpp
+iostream
+-
+string
+-
+glm/glm.hpp
+-
+SDL2/SDL.h
+-
+Scene.h
+/mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/src/Scene/Scene.h
+Entities.hpp
+/mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/src/Scene/Entities.hpp
+Components.hpp
+/mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/src/Scene/Components.hpp
+System.h
+/mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/src/Scene/System.h
+
 /mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/src/Scene/Scene.h
 SDL2/SDL.h
 -
@@ -1547,4 +1565,10 @@ utility
 -
 vector
 -
+
+/mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/src/main.cpp
+iostream
+-
+Game/game.h
+/mnt/c/Users/jdieg/Documents/UVG/A5S2/GameEngine/GameEngine-Sprite-Animations/src/Game/game.h
 

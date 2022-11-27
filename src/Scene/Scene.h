@@ -26,6 +26,7 @@ class Scene {
     entt::registry mRegistry;
     Entity* mainCamera;
     Entity* player;
+    Entity* enemy;
 
     Entity createEntity(
       const std::string& name = "NO NAME",

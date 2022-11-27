@@ -7,7 +7,6 @@
 
 class CharacterSetupSystem : public SetupSystem {
     private:
-        const std::string spritefile = "assets/bullet.png";        
         SDL_Renderer* renderer;
 
     public:
@@ -16,11 +15,6 @@ class CharacterSetupSystem : public SetupSystem {
         ~CharacterSetupSystem() {}
 
         void run() override {
-          auto cameraComponent = scene->mainCamera->getComponent<CameraComponent>();
-
-          SDL_Surface* surface = IMG_Load(spritefile.c_str());
-          SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-          SDL_FreeSurface(surface);
 
           Entity player = scene->createEntity(
             "PLAYER",
@@ -28,8 +22,30 @@ class CharacterSetupSystem : public SetupSystem {
             250
           );
           player.addComponent<MovementComponent>(0, 0);
-          player.addComponent<SpriteComponent>(0, 0, 50, texture);
+          player.addComponent<SpriteComponent>(0, 2, 15, 0, 0, 50 );
           scene->player = new Entity(player);
+        }
+};
+
+class EnemySetupSystem : public SetupSystem {
+    private:
+        SDL_Renderer* renderer;
+
+    public:
+        EnemySetupSystem(SDL_Renderer* r) : renderer(r) {}
+
+        ~EnemySetupSystem() {}
+
+        void run() override {
+
+          Entity enemy = scene->createEntity(
+            "ENEMY",
+            1100,
+            650
+          );
+          enemy.addComponent<MovementComponent>(200, 0);
+          enemy.addComponent<SpriteComponent>(1, 2, 25, 0, 0, 55 );
+          scene->enemy = new Entity(enemy);
         }
 };
 
@@ -67,6 +83,7 @@ class CameraSetupSystem : public SetupSystem {
         }
 };
 
+bool playedAction = false;
 class PlayerInputSystem : public InputSystem {
   public:
     void run(SDL_Event event) override {
@@ -90,6 +107,19 @@ class PlayerInputSystem : public InputSystem {
           case SDLK_s:
             playerMovement.vy = speed;
             break;
+          case SDLK_o:
+            if (!playedAction){
+              playerSprite.y = 2;
+              playedAction = true;
+            }
+            
+            break;
+          case SDLK_p:
+            if (!playedAction){
+              playerSprite.y = 3;
+              playedAction = true;
+            }
+            break;
         }
       }  
       if (event.type == SDL_KEYUP)
@@ -108,8 +138,24 @@ class PlayerInputSystem : public InputSystem {
 
           case SDLK_s:
             playerMovement.vy = 0;
+          
+          case SDLK_o:
+            playedAction = false;
+            break;
+          
+          case SDLK_p:
+            playedAction = false;
+            break;
+
 
         }
+      }
+
+      if (playerMovement.vx < 0) {
+        playerSprite.x = 1;
+      }
+      else if (playerMovement.vx > 0) {
+        playerSprite.x = 0;
       }
 
     }
@@ -119,17 +165,46 @@ class MovementUpdateSystem : public UpdateSystem {
     public:
 
         void run(double dT) override {
-          const auto view = scene->mRegistry.view<TransformComponent, MovementComponent>();
+          const auto view = scene->mRegistry.view<TransformComponent, MovementComponent, TagComponent, SpriteComponent>();
           for (const entt::entity e : view) {
             auto& pos = view.get<TransformComponent>(e);
-            const auto vel = view.get<MovementComponent>(e);
+            auto& vel = view.get<MovementComponent>(e);
+            const auto tag = view.get<TagComponent>(e);
 
-            int newPosX = pos.x + vel.vx * dT;
-            int newPosy = pos.y + vel.vy * dT;
-            if (newPosX > 130 && newPosX < 1200 && newPosy > 245 && newPosy < 890){
-              pos.x = newPosX;
-              pos.y = newPosy;
+            if (tag.tag == "PLAYER"){
+              int newPosX = pos.x + vel.vx * dT;
+              int newPosy = pos.y + vel.vy * dT;
+              if (newPosX > 130 && newPosX < 1200 && newPosy > 245 && newPosy < 890){
+                pos.x = newPosX;
+                pos.y = newPosy;
+              }
             }
+            else{
+
+              auto& sprite = view.get<SpriteComponent>(e);
+              if (pos.x <= 600)
+              {
+                vel.vx = 200;
+                sprite.x = 0;
+              }
+              if (pos.x == 700)
+              {
+                sprite.y = 2;
+              }
+              if (pos.x == 1000)
+              {
+                sprite.y = 3;
+              }
+
+              if (pos.x >= 1100)
+              {
+                vel.vx = -200;
+                sprite.x = 1;
+              }
+
+              pos.x += vel.vx * dT;
+            }
+
 
           }
         }
@@ -155,29 +230,74 @@ class CameraFollowUpdateSystem : public UpdateSystem {
         }
 };
 
-class SpriteRenderSystem : public RenderSystem {
+class SpriteRenderSystem : public SetupSystem, public UpdateSystem, public RenderSystem {
+  private:
+      SDL_Renderer* renderer;
+      SDL_Window* window;
+      int FPS;
+      std::string name;
+      
+      const std::string spritesheets[2] = {
+          "./assets/bulletA.png",
+          "./assets/brock.png",
+      };
+
+      SDL_Texture* tilesets[1];
     public:
-        SpriteRenderSystem() {}
+        SpriteRenderSystem(SDL_Renderer* r, SDL_Window* w, int fps) : renderer(r), window(w), FPS(fps) {}
 
         ~SpriteRenderSystem() {}
 
+        void run() override {
+          for(int i = 0; i < 2; i++) {
+            SDL_Surface* surface = IMG_Load(spritesheets[i].c_str());
+            tilesets[i] = SDL_CreateTextureFromSurface(renderer, surface);
+            SDL_FreeSurface(surface);
+          }
+        }
+
+        void run(double dT) override {
+          const auto view = UpdateSystem::scene->mRegistry.view<SpriteComponent>();
+
+          Uint32 current = SDL_GetTicks();
+
+          for (const entt::entity e : view) {
+            auto& sprite = view.get<SpriteComponent>(e);
+
+            if (sprite.durationSeconds > 0) {
+              float animdT = (current - sprite.lastUpdate) / 1000.0f;
+              float animFps = sprite.durationSeconds/FPS;
+              int framesToUpdate = animdT/animFps;
+
+              if (framesToUpdate > 0) {
+                sprite.y += framesToUpdate;
+                sprite.y %= sprite.frames;
+                sprite.lastUpdate = current;
+              }
+            }
+          }
+        }
+
         void run(SDL_Renderer* renderer) override {
-          auto cameraTransform = scene->mainCamera->getComponent<TransformComponent>();
-          auto cameraZoom = scene->mainCamera->getComponent<CameraComponent>().zoom;
+          auto cameraTransform = RenderSystem::scene->mainCamera->getComponent<TransformComponent>();
+          auto cameraZoom = RenderSystem::scene->mainCamera->getComponent<CameraComponent>().zoom;
           const int cx = cameraTransform.x;
           const int cy = cameraTransform.y;
 
-          const auto view = scene->mRegistry.view<TransformComponent, SpriteComponent>();
+          const auto view = RenderSystem::scene->mRegistry.view<TransformComponent, SpriteComponent>();
           for (const entt::entity e : view) {
             const auto pos = view.get<TransformComponent>(e);
             const auto sprite = view.get<SpriteComponent>(e);
-            const int dstTileSize = cameraZoom * sprite.size;
 
-            SDL_Rect src = { sprite.x, sprite.y, sprite.size, sprite.size };
+            const int dstTileSize = cameraZoom * sprite.size;
+            const int spriteX = sprite.x * sprite.size;
+            const int spriteY = sprite.y * sprite.size;
+
+            SDL_Rect src = { spriteX, spriteY, sprite.size, sprite.size };
             SDL_Rect dst = { pos.x - cx, pos.y - cy, dstTileSize, dstTileSize };
 
             SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-            SDL_RenderCopy(renderer, sprite.texture, &src, &dst);                        
+            SDL_RenderCopy(renderer, tilesets[sprite.sheetIndex], &src, &dst);                        
           }
         }
 };
@@ -286,7 +406,7 @@ class TileMapSystem : public SetupSystem, public RenderSystem {
           rect.x += tileWidth;
         }
         rect.x = -cx;
-        rect.y += tileHeigth;
+        rect.y += dstTileSize;
       }
     }
 };

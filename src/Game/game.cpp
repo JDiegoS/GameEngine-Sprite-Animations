@@ -88,15 +88,9 @@ Uint32 spriteBackground(Uint32 currentColor, float dT)
 Scene* scene;
 void Game::setup(){
 
-    scene = new Scene("Level1");
+    scene = new Scene("Level 1");
 
-    scene->addSetupSystem(new CameraSetupSystem(
-        4,
-        window_width,
-        window_height,
-        24 * 16 * 4,
-        19 * 16 * 4
-    ));
+    scene->addSetupSystem(new CameraSetupSystem(4, window_width, window_height, 24 * 16 * 4, 19 * 16 * 4));
 
     TileMapSystem* tileMapSystem = new TileMapSystem(renderer, window);
     scene->addSetupSystem(tileMapSystem);
@@ -105,7 +99,12 @@ void Game::setup(){
     scene->addSetupSystem(new CharacterSetupSystem(renderer));
     scene->addInputSystem(new PlayerInputSystem());
 
-    scene->addRenderSystem(new SpriteRenderSystem());
+    scene->addSetupSystem(new EnemySetupSystem(renderer));
+
+    SpriteRenderSystem* spriteRenderSystem = new SpriteRenderSystem(renderer, window, FPS);
+    scene->addSetupSystem(spriteRenderSystem);
+    scene->addUpdateSystem(spriteRenderSystem);
+    scene->addRenderSystem(spriteRenderSystem);
 
     scene->addUpdateSystem(new MovementUpdateSystem());
     scene->addUpdateSystem(new CameraFollowUpdateSystem());
